@@ -92,8 +92,8 @@ int main()
 			float fac = 24.0*epsilon*pow(sbr, 7)*(2*pow(sbr, 6) - 1.0);
 			// force == acceleration
 			fac = -1;
-			float dx = fac*rx;
-			float dy = fac*ry;
+			float dx ;
+			float dy ;
 			if(r>=0.2){
 				dx = fac*rx;
 				dy = fac*ry;
@@ -108,14 +108,15 @@ int main()
 
 			char buf[80];
 			sprintf(buf, "dx: %0.1f\n", dx);
-			printf( "dx: %0.1f\n", dx);
-			printf( "r: %0.1f\n", r);
-			printf( "fac: %0.1f\n", fac);
+			// printf( "dx: %0.1f\n", dx);
+			// printf( "r: %0.1f\n", r);
+			// printf( "fac: %0.1f\n", fac);
 			DrawText(buf, 20,50,20, WHITE);
 		}
 		// repulsion among allnodes
 		for(int i=0; i< num_nodes; i++) {
-			for(int j=i+1; j< num_nodes; j++) {
+			for(int j=0; j< num_nodes; j++) {
+			if(i!=j){
 			float r = 0;
 			float rx = -xnodes[i] + xnodes[j];
 			float ry = -ynodes[i] + ynodes[j];
@@ -123,25 +124,28 @@ int main()
 			float sbr = sigma/r;
 			float fac ;
 			// force == acceleration
-			fac = 1e-4;
-			float dx = fac/(r+0.001);
-			float dy = fac/(r+0.001);
-			if(r>=0.05 && r<0.8){
+			fac = 1e-3;
+			float dx ;
+			float dy ;
+			if( r<0.8){
 				dx = fac/(r+0.01);
                                 dy = fac/(r+0.01);
 			}else {
 				dx = 0 ;
 				dy = 0 ;
 			}
-			xnodes[i] += 0.5 * dx *dt*dt/r;
-			ynodes[i] += 0.5 * dy *dt*dt/r;
+			xnodes[i] += 0.5 * dx *dt*dt;
+			ynodes[i] += 0.5 * dy *dt*dt;
 
 			char buf[80];
 			sprintf(buf, "dx: %0.1f\n", dx);
-			printf( "dx: %0.1f\n", dx);
-			printf( "r: %0.1f\n", r);
-			printf( "fac: %0.1f\n", fac);
+			// printf( "dx: %0.1f\n", dx);
+			// printf( "r: %0.1f\n", r);
+			// printf( "fac: %0.1f\n", fac);
 			DrawText(buf, 20,50,20, WHITE);
+			if(i==0 && j==3)
+				printf("force%f\n", dx);
+			}
 			}
 		}
 
