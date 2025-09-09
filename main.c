@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <raylib.h>
-
+#include <math.h>
 
 int main()
 {
@@ -56,16 +56,94 @@ int main()
 		xnodes[i]  = (float)rand()/RAND_MAX;
 	        ynodes[i]  = (float)rand()/RAND_MAX;
 	}
+	xnodes[0] = 0.5;
+	ynodes[0] = 0.5;
 
 
 
-	SetTargetFPS(60);
+	// time for animation
+	float dt = 0.1;
+	float sigma = 0.06;
+	float epsilon = 1e2;
+	// v = 4 epsilon ( (sigma/r)**12 - (sigma/r)**6)
+	// f = 24 epsilon ( -2(sigma/r)**13 rvec + (sigma/r)**7 rvec)
+	SetTargetFPS(20);
 	while(!WindowShouldClose()){
 		wwidth = GetScreenWidth();
 		wheight = GetScreenHeight();
 		BeginDrawing();
 		ClearBackground(BLACK);
 		DrawText("Press Esc to quit!",10,10,  20, WHITE);
+
+		// TODO: remove this anchoring
+		xnodes[0] = 0.5;
+		ynodes[0] = 0.5;
+		// update the positions due to the  forces
+		// force only due to  links
+		// from reamains fixes, to gets changed
+		//making the links
+		// only attracion is not good
+		for(int i=0; i< num_links; i++) {
+			float r = 0;
+			float rx = -xnodes[from[i]-1] + xnodes[to[i]-1];
+			float ry = -ynodes[from[i]-1] + ynodes[to[i]-1];
+			r = sqrt( (rx)* (rx) + (ry) * (ry) );
+			float sbr = sigma/r;
+			float fac = 24.0*epsilon*pow(sbr, 7)*(2*pow(sbr, 6) - 1.0);
+			// force == acceleration
+			fac = -1;
+			float dx = fac*rx;
+			float dy = fac*ry;
+			if(r>=0.2){
+				dx = fac*rx;
+				dy = fac*ry;
+			}else {
+				dx = 0 ;
+				dy = 0 ;
+			}
+			xnodes[to[i]-1] += 0.5 * dx *dt*dt/r;
+			ynodes[to[i]-1] += 0.5 * dy *dt*dt/r;
+			xnodes[from[i]-1] -= 0.5 * dx *dt*dt/r;
+			ynodes[from[i]-1] -= 0.5 * dy *dt*dt/r;
+
+			char buf[80];
+			sprintf(buf, "dx: %0.1f\n", dx);
+			printf( "dx: %0.1f\n", dx);
+			printf( "r: %0.1f\n", r);
+			printf( "fac: %0.1f\n", fac);
+			DrawText(buf, 20,50,20, WHITE);
+		}
+		// repulsion among allnodes
+		for(int i=0; i< num_nodes; i++) {
+			for(int j=i+1; j< num_nodes; j++) {
+			float r = 0;
+			float rx = -xnodes[i] + xnodes[j];
+			float ry = -ynodes[i] + ynodes[j];
+			r = sqrt( (rx)* (rx) + (ry) * (ry) );
+			float sbr = sigma/r;
+			float fac ;
+			// force == acceleration
+			fac = 1e-4;
+			float dx = fac/(r+0.001);
+			float dy = fac/(r+0.001);
+			if(r>=0.05 && r<0.8){
+				dx = fac/(r+0.01);
+                                dy = fac/(r+0.01);
+			}else {
+				dx = 0 ;
+				dy = 0 ;
+			}
+			xnodes[i] += 0.5 * dx *dt*dt/r;
+			ynodes[i] += 0.5 * dy *dt*dt/r;
+
+			char buf[80];
+			sprintf(buf, "dx: %0.1f\n", dx);
+			printf( "dx: %0.1f\n", dx);
+			printf( "r: %0.1f\n", r);
+			printf( "fac: %0.1f\n", fac);
+			DrawText(buf, 20,50,20, WHITE);
+			}
+		}
 
 
 		//making the links
