@@ -2,17 +2,25 @@
 #include <stdlib.h>
 #include <raylib.h>
 #include <math.h>
+#include <time.h>
 
-int main()
+int main(int argc, char *argv[])
 {
+	if(argc ==1){
+		printf("Insufficient arguments\n");
+		printf("Usage: %s <filename>\n", argv[0]);
+		return 1;
+	}
 	int wwidth = 100, wheight = 100;
 	const char *title = "Graphs";
+	float scale = 1.0;
 	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+	SetConfigFlags(FLAG_WINDOW_TRANSPARENT);
 	InitWindow(wwidth, wheight, title);
 
 
 	// reading the file
-	FILE *f = fopen("file.txt", "r");
+	FILE *f = fopen(argv[1], "r");
 	if (f == NULL){
 		fprintf(stderr, "cannot open the file name\n");
 		goto EXIT;
@@ -47,11 +55,14 @@ int main()
 			num_nodes = b;
 		count++;
 	}
+	fclose(f);
 
 	float *xnodes, *ynodes;
 	xnodes = malloc(sizeof(float)*num_nodes);
 	ynodes = malloc(sizeof(float)*num_nodes);
 	srand(42);
+	int seed= (int)(time(NULL));
+	srand(seed);
 	for(int i=0; i< num_nodes; i++){
 		xnodes[i]  = (float)rand()/RAND_MAX;
 	        ynodes[i]  = (float)rand()/RAND_MAX;
@@ -63,21 +74,32 @@ int main()
 
 	// time for animation
 	float dt = 0.1;
-	float sigma = 0.06;
-	float epsilon = 1e2;
+	// sigma = r_opt /  2**1/6
+	float sigma = 0.01/pow(2,1.0/6.0);
+	// depth of the potential
+	float epsilon = 1e1;
 	// v = 4 epsilon ( (sigma/r)**12 - (sigma/r)**6)
 	// f = 24 epsilon ( -2(sigma/r)**13 rvec + (sigma/r)**7 rvec)
-	SetTargetFPS(20);
+	SetTargetFPS(120);
+	Color BG;
+	BG.r = 0x0;
+	BG.g = 0x0;
+	BG.b = 0x0;
+	BG.a = 0xff;
+	char sseed[100];
+	sprintf(sseed, "Seed is %d\n", seed);
 	while(!WindowShouldClose()){
 		wwidth = GetScreenWidth();
 		wheight = GetScreenHeight();
 		BeginDrawing();
-		ClearBackground(BLACK);
-		DrawText("Press Esc to quit!",10,10,  20, WHITE);
+		ClearBackground(BG);
+		DrawText("Press Esc to quit!, mouse scroll to partial zoom",10,10,  20, WHITE);
+		DrawText("Left mouse button to pan.", 10, 30,  20, WHITE);
+		DrawText(sseed, 10, 50,  20, WHITE);
 
 		// TODO: remove this anchoring
-		xnodes[0] = 0.5;
-		ynodes[0] = 0.5;
+		// xnodes[0] = 0.5;
+		// ynodes[0] = 0.5;
 		// update the positions due to the  forces
 		// force only due to  links
 		// from reamains fixes, to gets changed
@@ -91,32 +113,33 @@ int main()
 			float sbr = sigma/r;
 			float fac = 24.0*epsilon*pow(sbr, 7)*(2*pow(sbr, 6) - 1.0);
 			// force == acceleration
-			fac = -1;
+
+			float p = 0.001;
+			float s = 0.9;
+			fac = p*pow(r, 0.5) + s/r - p*p ;
+			fac = p/r - r  ;
 			float dx ;
 			float dy ;
-			if(r>=0.2){
-				dx = fac*rx;
-				dy = fac*ry;
+			// if(r>=0.1){
+			if(true){
+				// dx = fac*rx + 0.05*fac/rx ;
+				// dy = fac*ry + 0.05*fac/ry;
+				dx = fac*rx ;
+				dy = fac*ry ;
 			}else {
 				dx = 0 ;
 				dy = 0 ;
 			}
-			xnodes[to[i]-1] += 0.5 * dx *dt*dt/r;
-			ynodes[to[i]-1] += 0.5 * dy *dt*dt/r;
-			xnodes[from[i]-1] -= 0.5 * dx *dt*dt/r;
-			ynodes[from[i]-1] -= 0.5 * dy *dt*dt/r;
-
-			char buf[80];
-			sprintf(buf, "dx: %0.1f\n", dx);
-			// printf( "dx: %0.1f\n", dx);
-			// printf( "r: %0.1f\n", r);
-			// printf( "fac: %0.1f\n", fac);
-			DrawText(buf, 20,50,20, WHITE);
+			float temp =  1 - r;
+			xnodes[to[i]-1] += 0.5 * dx *dt*dt/(r+temp);
+			ynodes[to[i]-1] += 0.5 * dy *dt*dt/(r+temp);
+			xnodes[from[i]-1] -= 0.5 * dx *dt*dt/(r+temp);
+			ynodes[from[i]-1] -= 0.5 * dy *dt*dt/(r+temp);
 		}
 		// repulsion among allnodes
 		for(int i=0; i< num_nodes; i++) {
-			for(int j=0; j< num_nodes; j++) {
-			if(i!=j){
+		for(int j=0; j< num_nodes; j++) {
+		if(i!=j){
 			float r = 0;
 			float rx = -xnodes[i] + xnodes[j];
 			float ry = -ynodes[i] + ynodes[j];
@@ -124,12 +147,14 @@ int main()
 			float sbr = sigma/r;
 			float fac ;
 			// force == acceleration
-			fac = 1e-3;
+			fac = -2e-1;
 			float dx ;
 			float dy ;
 			if( r<0.8){
-				dx = fac/(r+0.01);
-                                dy = fac/(r+0.01);
+				dx = fac*rx/(r+0.01);
+                                dy = fac*ry/(r+0.01);
+				dx = fac*rx/(r*r*r);
+                                dy = fac*ry/(r*r*r);
 			}else {
 				dx = 0 ;
 				dy = 0 ;
@@ -137,37 +162,48 @@ int main()
 			xnodes[i] += 0.5 * dx *dt*dt;
 			ynodes[i] += 0.5 * dy *dt*dt;
 
-			char buf[80];
-			sprintf(buf, "dx: %0.1f\n", dx);
-			// printf( "dx: %0.1f\n", dx);
-			// printf( "r: %0.1f\n", r);
-			// printf( "fac: %0.1f\n", fac);
-			DrawText(buf, 20,50,20, WHITE);
-			}
-			}
+		}
+		}
 		}
 
 
 		//making the links
 		for(int i=0; i< num_links; i++) {
-			DrawLine(wwidth*xnodes[from[i]-1 ], wheight*ynodes[from[i]-1 ],
-				 wwidth*xnodes[to[i]-1 ], wheight*ynodes[to[i] -1],
+			DrawLine(scale*wwidth*xnodes[from[i]-1 ], scale*wheight*ynodes[from[i]-1 ],
+				 scale*wwidth*xnodes[to[i]-1 ], scale*wheight*ynodes[to[i] -1],
 				 GREEN);
 		}
 
 
 		// making one node
 		for(int i=0; i< num_nodes; i++){
-			DrawCircle(wwidth*xnodes[i], wheight*ynodes[i], 10, WHITE);
+			DrawCircle(scale*wwidth*xnodes[i], scale*wheight*ynodes[i], 10, WHITE);
 			char buf[10];
 			sprintf(buf, "%d", i+1);
-			DrawText(buf, wwidth*xnodes[i], wheight*ynodes[i], 20, RED);
+			DrawText(buf, scale*wwidth*xnodes[i], scale*wheight*ynodes[i], 20, RED);
 		}
+		char buf[80];
+		float mouse = GetMouseWheelMove();
+		scale += mouse*0.1;
+		int flag, transx, transy;
+		Vector2 move;
+		flag = 0;
+		if(IsMouseButtonDown(0)){
+			flag = 1;
+			move = GetMouseDelta();
+		}
+		for(int i=0; i<num_nodes; i++){
+			xnodes[i] +=move.x/wwidth;
+			ynodes[i] +=move.y/wheight;
+		}
+
+
+		sprintf(buf, "scale %f", scale);
+		DrawText(buf, 10, 80, 20, WHITE);
 
 		EndDrawing();
 	}
 
-	fclose(f);
 	free(xnodes);
 	free(ynodes);
 	free(from);

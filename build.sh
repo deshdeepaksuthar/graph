@@ -1,3 +1,3 @@
 #!/bin/sh
 set -xe
-gcc -o main main.c -lraylib -lm
+gcc -o graph main.c -lraylib -lm
