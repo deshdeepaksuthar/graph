@@ -143,8 +143,6 @@ int main()
 			// printf( "r: %0.1f\n", r);
 			// printf( "fac: %0.1f\n", fac);
 			DrawText(buf, 20,50,20, WHITE);
-			if(i==0 && j==3)
-				printf("force%f\n", dx);
 			}
 			}
 		}
