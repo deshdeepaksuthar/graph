@@ -1,5 +1,5 @@
 # a simple graph animator
-takes input from  `file.txt`
+takes input from a text file
 to make and run, raylib is needed
 * `./build.sh`
-* `./main`
+* `./graph <filename>`

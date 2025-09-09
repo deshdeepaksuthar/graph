@@ -97,9 +97,6 @@ int main(int argc, char *argv[])
 		DrawText("Left mouse button to pan.", 10, 30,  20, WHITE);
 		DrawText(sseed, 10, 50,  20, WHITE);
 
-		// TODO: remove this anchoring
-		// xnodes[0] = 0.5;
-		// ynodes[0] = 0.5;
 		// update the positions due to the  forces
 		// force only due to  links
 		// from reamains fixes, to gets changed
