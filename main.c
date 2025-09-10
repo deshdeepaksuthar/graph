@@ -5,6 +5,7 @@
 #include <time.h>
 
 #define LCOLOR GREEN
+#define CYAN       (Color){ 0, 255, 255, 255 }     //
 
 int main(int argc, char *argv[])
 {
@@ -70,6 +71,7 @@ int main(int argc, char *argv[])
 	}
 	xnodes[0] = 0.5;
 	ynodes[0] = 0.5;
+	float node_radius = 4.0;
 
 
 
@@ -136,8 +138,7 @@ int main(int argc, char *argv[])
 		}
 		// repulsion among allnodes
 		for(int i=0; i< num_nodes; i++) {
-		for(int j=0; j< num_nodes; j++) {
-		if(i!=j){
+		for(int j=i+1; j< num_nodes; j++) {
 			float r = 0;
 			float rx = -xnodes[i] + xnodes[j];
 			float ry = -ynodes[i] + ynodes[j];
@@ -162,26 +163,25 @@ int main(int argc, char *argv[])
 
 		}
 		}
-		}
 
 
 		//making the links
 		for(int i=0; i< num_links; i++) {
 			DrawLine(scale*wwidth*xnodes[from[i]-1 ]-1, scale*wheight*ynodes[from[i]-1 ],
 				 scale*wwidth*xnodes[to[i]-1 ]-1, scale*wheight*ynodes[to[i] -1],
-				 LCOLOR);
+				 GREEN);
 			DrawLine(scale*wwidth*xnodes[from[i]-1], scale*wheight*ynodes[from[i]-1 ],
 				 scale*wwidth*xnodes[to[i]-1], scale*wheight*ynodes[to[i] -1],
-				 LCOLOR);
+				 CYAN);
 			DrawLine(scale*wwidth*xnodes[from[i]-1 ]+1, scale*wheight*ynodes[from[i]-1 ],
 				 scale*wwidth*xnodes[to[i]-1 ]+1, scale*wheight*ynodes[to[i] -1],
-				 LCOLOR);
+				 GREEN);
 		}
 
 
 		// making one node
 		for(int i=0; i< num_nodes; i++){
-			DrawCircle(scale*wwidth*xnodes[i], scale*wheight*ynodes[i], 10, WHITE);
+			DrawCircle(scale*wwidth*xnodes[i], scale*wheight*ynodes[i], node_radius, WHITE);
 			char buf[10];
 			sprintf(buf, "%d", i+1);
 			DrawText(buf, scale*wwidth*xnodes[i], scale*wheight*ynodes[i], 20, RED);

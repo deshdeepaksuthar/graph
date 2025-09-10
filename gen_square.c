@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define N 15
+#define N 70
 int main()
 {
 	int num_points = N*N;
