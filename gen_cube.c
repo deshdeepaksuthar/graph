@@ -21,14 +21,14 @@ int main()
 	for(int i=1; i<=N; i++){
 		for(int j=1; j<=N; j++){
 		for(int k=1; k<N; k++){
-			fprintf(f, "%d-%d\n", i+ (j-1)*N +(k-1)*N*N, i +N+ (j-1)*N+(k-1)*N*N);
+			//fprintf(f, "%d-%d\n", i+ (j-1)*N +(k-1)*N*N, i + (j)*N+(k-1)*N*N);
 		}
 		}
 	}
 	for(int i=1; i<=N; i++){
 		for(int j=1; j<N; j++){
 		for(int k=1; k<N; k++){
-			fprintf(f, "%d-%d\n", i+ (j-1)*N +(k-1)*N*N, i +N*N+ (j-1)*N+(k-1)*N*N);
+			// fprintf(f, "%d-%d\n", i+ (j-1)*N +(k-1)*N*N, i +N*N+ (j-1)*N+(k-1)*N*N);
 		}
 		}
 	}

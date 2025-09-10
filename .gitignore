@@ -2,4 +2,6 @@ main
 generator
 gen_cube
 gen_square
+gen_cylinder
+gen_toroid
 graph

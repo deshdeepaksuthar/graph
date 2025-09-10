@@ -4,6 +4,8 @@
 #include <math.h>
 #include <time.h>
 
+#define LCOLOR GREEN
+
 int main(int argc, char *argv[])
 {
 	if(argc ==1){
@@ -11,7 +13,7 @@ int main(int argc, char *argv[])
 		printf("Usage: %s <filename>\n", argv[0]);
 		return 1;
 	}
-	int wwidth = 100, wheight = 100;
+	int wwidth = 800, wheight = 500;
 	const char *title = "Graphs";
 	float scale = 1.0;
 	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
@@ -26,7 +28,6 @@ int main(int argc, char *argv[])
 		goto EXIT;
 	}
 	// loading the graph in the memory
-	char buff[80];
 	int a,b ;
 	int num_links = 0;
 	int num_nodes = 0;
@@ -144,14 +145,14 @@ int main(int argc, char *argv[])
 			float sbr = sigma/r;
 			float fac ;
 			// force == acceleration
-			fac = -2e-1;
+			fac = -2e-1/pow(r+0.001,1);
+			// fac = -2e-1*(exp(-r) - 0.5);
 			float dx ;
 			float dy ;
-			if( r<0.8){
-				dx = fac*rx/(r+0.01);
-                                dy = fac*ry/(r+0.01);
-				dx = fac*rx/(r*r*r);
-                                dy = fac*ry/(r*r*r);
+			if(true){
+			//if( r<0.2){
+				dx = fac*rx;
+                                dy = fac*ry;
 			}else {
 				dx = 0 ;
 				dy = 0 ;
@@ -166,9 +167,15 @@ int main(int argc, char *argv[])
 
 		//making the links
 		for(int i=0; i< num_links; i++) {
-			DrawLine(scale*wwidth*xnodes[from[i]-1 ], scale*wheight*ynodes[from[i]-1 ],
-				 scale*wwidth*xnodes[to[i]-1 ], scale*wheight*ynodes[to[i] -1],
-				 GREEN);
+			DrawLine(scale*wwidth*xnodes[from[i]-1 ]-1, scale*wheight*ynodes[from[i]-1 ],
+				 scale*wwidth*xnodes[to[i]-1 ]-1, scale*wheight*ynodes[to[i] -1],
+				 LCOLOR);
+			DrawLine(scale*wwidth*xnodes[from[i]-1], scale*wheight*ynodes[from[i]-1 ],
+				 scale*wwidth*xnodes[to[i]-1], scale*wheight*ynodes[to[i] -1],
+				 LCOLOR);
+			DrawLine(scale*wwidth*xnodes[from[i]-1 ]+1, scale*wheight*ynodes[from[i]-1 ],
+				 scale*wwidth*xnodes[to[i]-1 ]+1, scale*wheight*ynodes[to[i] -1],
+				 LCOLOR);
 		}
 
 
@@ -181,7 +188,7 @@ int main(int argc, char *argv[])
 		}
 		char buf[80];
 		float mouse = GetMouseWheelMove();
-		scale += mouse*0.1;
+		scale += mouse*0.1*scale;
 		int flag, transx, transy;
 		Vector2 move;
 		flag = 0;
@@ -190,8 +197,8 @@ int main(int argc, char *argv[])
 			move = GetMouseDelta();
 		}
 		for(int i=0; i<num_nodes; i++){
-			xnodes[i] +=move.x/wwidth;
-			ynodes[i] +=move.y/wheight;
+			xnodes[i] +=move.x/wwidth/scale;
+			ynodes[i] +=move.y/wheight/scale;
 		}
 
 
